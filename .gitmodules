@@ -1,0 +1,3 @@
+[submodule "LibMedium"]
+	path = LibMedium
+	url = https://github.com/Tilo15/LibMedium/

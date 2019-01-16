@@ -1,0 +1,87 @@
+namespace net.unitatem.libpeer
+class LibPeerUnix
+
+model Network{
+    protocol: binary
+    name: string
+    active: string
+}
+
+model Transport{
+    protocol: binary
+    name: string
+}
+
+model Address{
+    protocol: binary
+    address: binary
+    port: binary
+    label: binary
+}
+
+model Message{
+    address: Address
+    payload: binary
+    channel: binary
+    transport: binary
+}
+
+model Peer{
+    administrative_distance: uint16
+    last_seen: double
+    address: Address
+}
+
+// List available discoverers
+method available_discoverers(): *string
+
+// List available networks
+method available_networks(): *Network
+
+// List available discoverers
+method available_transports(): *Transport
+
+// Bind to an application namespace
+method bind(application: binary, local: boolean)
+
+// Toggle advertising the peer
+method set_discoverable(discoverable: boolean)
+
+// Add a label to advertise
+method add_label(label: binary)
+
+// Stop advertising with a label
+method remove_label(label: binary)
+
+// Clear all labels
+method clear_labels()
+
+// Get a list of available unlabelled peers
+method get_peers(): *Peer
+
+// Get a list of available peers with a label
+method get_labelled_peers(label: binary): *Peer
+
+// Send a message over the network
+method send(message: Message)
+
+// Stop accepting messages for this application
+method close()
+
+// Fires when a peer with a unique address is discovered
+event new_peer(peer: Peer)
+
+// Fires when a new message is received over the network
+event receive(message: Message)
+
+// Can occur on bind if the namespace has already been bound to
+exception NamespaceOccupiedError
+
+// When there was an error sending data at the transport layer
+exception TransportError
+
+// When there was an error sending data at the network layer
+exception NetworkError
+
+// Data inside a model is invalid
+exception DataError
