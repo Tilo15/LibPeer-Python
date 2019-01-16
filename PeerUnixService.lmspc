@@ -77,10 +77,7 @@ event receive(message: Message)
 // Can occur on bind if the namespace has already been bound to
 exception NamespaceOccupiedError
 
-// When there was an error sending data at the transport layer
-exception TransportError
-
-// When there was an error sending data at the network layer
+// When there was an error sending data
 exception NetworkError
 
 // Data inside a model is invalid
