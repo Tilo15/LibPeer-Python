@@ -1,10 +1,15 @@
 from LibPeer.Networks.Ipv4 import Ipv4
 from LibPeer.Muxer import Muxer
 from LibPeer.Transports.EDP import EDP
+from LibPeer.Discoverers.Samband import Samband
 
 from LibPeer.Formats.BinaryAddress import BinaryAddress
 
 import struct
+
+from LibPeer.Logging import log
+
+log.settings(True, 0)
 
 def recv(info):
     data = info[0]
@@ -13,20 +18,38 @@ def recv(info):
 
     print("Got message from peer %s over channel %s: %s" % (str(addr), str(chan), data.decode("utf-8")))
 
-app = b"quickmessage"
+peers = set()
 
-net = Ipv4({"address": "", "port": 3001})
+def new_peer(address):
+    print("Found peer %s" % str(address))
+    peers.add(address)
+
+
+app = b"helloworld"
+
+net = Ipv4({"address": "192.168.1.224", "port": 3001})
 net.go_up()
 
 muxer = Muxer([net])
 muxer.add_application(app)
 
+disc = Samband([net])
+disc.add_application(app)
+disc.discovered.subscribe(new_peer)
+
 trans = EDP(muxer, {})
 trans.incoming.subscribe(recv)
 
 while True:
-    addr = input("Dest: ").encode("utf-8").split(b":")
-    chan = int(input("Channel: "))
+    # chan = int(input("Channel: "))
     mesg = input("Message: ").encode("utf-8")
 
-    trans.send(mesg, struct.pack("!QQ", 0, chan), app, BinaryAddress(net.identifier, addr[0], addr[1])).subscribe(lambda x: print("Sent!"))
+    for peer in peers:    
+        print("************" * 4)
+        trans.send(mesg, struct.pack("!QQ", 0, 0), app, peer).subscribe(lambda x: print("Sent to %s" % peer))
+
+    for address in disc.get_addresses():
+        address.application = app
+        disc.advertise(address)
+    
+    print("Advertised")
