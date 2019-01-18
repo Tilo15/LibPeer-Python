@@ -47,7 +47,7 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         self.transport_map = {} 
 
         for transport in self.transports:
-            transport.incoming.subscribe(self.data_received)
+            transport.incoming.subscribe(lambda info: self.data_received(info, transport.identifier))
             self.transport_map[transport.identifier] = transport
 
         # Setup discoverers (TODO needs system config)
@@ -102,7 +102,7 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         self.new_peer(model, app)
 
 
-    def data_received(self, info):
+    def data_received(self, info, transport):
         # Unpack the tuple
         data: bytes = info[0]
         channel: bytes = info[1]
@@ -119,7 +119,7 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         model_address = LibPeerUnix.Models.Address(address.network_type, address.network_address, address.network_port, label)
 
         # Create the message
-        model_message = LibPeerUnix.Models.Message(model_address, data, channel)
+        model_message = LibPeerUnix.Models.Message(model_address, data, channel, transport)
 
         # Send to the app
         self.receive(model_message, app)
@@ -277,7 +277,7 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
             priority = self.namespace_priorities[address.application]
 
         # Create the TransmitItem
-        item = TransmitItem(transport, message.payload, message.payload, address, defer, priority)
+        item = TransmitItem(transport, message.payload, message.channel, address, defer, priority)
 
         # Add the item to the queue
         self.tx_queue.put(item)

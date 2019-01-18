@@ -35,7 +35,7 @@ libpeer.new_peer.subscribe(new_peer)
 def new_message(args):
     message: Message = args[0]
     print("----")
-    print("Got message: %s\nFrom: %s://%s:%s" % (message.payload.decode("utf-8"), peer.address.protocol.decode("utf-8"), peer.address.address.decode("utf-8"), peer.address.port.decode("utf-8")))
+    print("Got message: %s\nFrom: %s://%s:%s" % (message.payload.decode("utf-8"), message.address.protocol.decode("utf-8"), message.address.address.decode("utf-8"), message.address.port.decode("utf-8")))
     print("----")
 
 # Subscribe to new messages
