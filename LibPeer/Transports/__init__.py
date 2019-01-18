@@ -16,7 +16,7 @@ class Transport:
         self.muxer.incoming.subscribe(self._receive_handler)
 
 
-    def send(self, data: bytes, address: BinaryAddress) -> rx.Observable:
+    def send(self, data: bytes, channel: bytes, address: BinaryAddress) -> rx.Observable:
         raise NotImplementedError
 
     def _receive_handler(self, info):

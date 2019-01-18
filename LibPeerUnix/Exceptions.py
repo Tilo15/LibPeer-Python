@@ -1,22 +1,22 @@
 class NamespaceOccupiedError(Exception):
 	pass
 
-class TransportError(Exception):
-	pass
-
 class NetworkError(Exception):
 	pass
 
 class DataError(Exception):
 	pass
 
+class UnboundError(Exception):
+	pass
+
 from LibMedium.Medium import RemoteCallException
 
 ERROR_MAP = {
 	1: NamespaceOccupiedError
-	2: TransportError
-	3: NetworkError
-	4: DataError
+	2: NetworkError
+	3: DataError
+	4: UnboundError
 }
 
 
@@ -27,9 +27,9 @@ def throw(error: RemoteCallException):
 
 REV_ERROR_MAP = {
 	NamespaceOccupiedError: 1
-	TransportError: 2
-	NetworkError: 3
-	DataError: 4
+	NetworkError: 2
+	DataError: 3
+	UnboundError: 4
 }
 
 

@@ -2,17 +2,17 @@ from LibMedium.Specification.Item import Primitives
 import LibMedium.Util
 
 class Network:
-	def __init__(self, protocol: bytes, name: str, active: str):
+	def __init__(self, protocol: bytes, name: str, active: bool):
 		self.protocol: bytes = protocol
 		self.name: str = name
-		self.active: str = active
+		self.active: bool = active
 	
 	
 	def serialise(self):
 		items = [
 			Primitives.type_binary.serialise(self.protocol),
 			Primitives.type_string.serialise(self.name),
-			Primitives.type_string.serialise(self.active),
+			Primitives.type_boolean.serialise(self.active),
 		]
 		return LibMedium.Util.pack_list(items)
 	
@@ -22,7 +22,7 @@ class Network:
 		return Network(
 			Primitives.type_binary.deserialise(items[0]),
 			Primitives.type_string.deserialise(items[1]),
-			Primitives.type_string.deserialise(items[2])
+			Primitives.type_boolean.deserialise(items[2])
 		)
 
 from LibMedium.Specification.Item import Primitives

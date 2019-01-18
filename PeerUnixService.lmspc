@@ -4,7 +4,7 @@ class LibPeerUnix
 model Network{
     protocol: binary
     name: string
-    active: string
+    active: boolean
 }
 
 model Transport{
@@ -42,7 +42,7 @@ method available_networks(): *Network
 method available_transports(): *Transport
 
 // Bind to an application namespace
-method bind(application: binary, local: boolean)
+method bind(application: binary)
 
 // Toggle advertising the peer
 method set_discoverable(discoverable: boolean)
@@ -82,3 +82,7 @@ exception NetworkError
 
 // Data inside a model is invalid
 exception DataError
+
+// Application ran a method that requires bind to have been called
+// before calling bind()
+exception UnboundError

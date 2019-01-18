@@ -12,8 +12,8 @@ class EDP(Transport):
         super().__init__(muxer, options)
 
 
-    def send(self, data: bytes, channel: bytes, application: bytes, address: BinaryAddress) -> rx.Observable:
-        return self.muxer.send(data, channel, application, self.identifier, address)
+    def send(self, data: bytes, channel: bytes, address: BinaryAddress) -> rx.Observable:
+        return self.muxer.send(data, channel, self.identifier, address)
 
     
     def _receive(self, data, channel, address):

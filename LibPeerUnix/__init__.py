@@ -39,9 +39,9 @@ class LibPeerUnixConnection:
 		except RemoteCallException as e:
 			LibPeerUnix.Exceptions.throw(e)
 	
-	def bind(self, application: bytes, local: bool):
+	def bind(self, application: bytes):
 		try:
-			self._medium.invoke(b'bind', Primitives.type_binary.serialise(application), Primitives.type_boolean.serialise(local)).response
+			self._medium.invoke(b'bind', Primitives.type_binary.serialise(application)).response
 		except RemoteCallException as e:
 			LibPeerUnix.Exceptions.throw(e)
 	

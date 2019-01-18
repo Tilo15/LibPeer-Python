@@ -40,9 +40,9 @@ class Muxer:
             log.warn("Error during receive callback: %s" % str(e))
 
 
-    def send(self, data: bytes, channel: bytes, application: bytes, transport: bytes, address: BinaryAddress) -> rx.Observable:
+    def send(self, data: bytes, channel: bytes, transport: bytes, address: BinaryAddress) -> rx.Observable:
         # Create the parcel
-        parcel = Parcel(uuid.uuid4(), channel, transport, application, data)
+        parcel = Parcel(uuid.uuid4(), channel, transport, address.application, data)
 
         # Send over network
         return self.networks[address.network_type].send(parcel.serialise(), address)
