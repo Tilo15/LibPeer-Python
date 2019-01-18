@@ -49,7 +49,8 @@ class BinaryAddress:
         if(b"\x02" not in data):
             # Has label
             app, data = data[1:].split(b"\x2F", 1)
-            label = data[1]
+            label = data[:32]
+            data = data[32:]
 
         else:
             app, data = data[1:].split(b"\x02", 1)

@@ -9,6 +9,8 @@ from LibMedium.Specification.Item import Primitives
 import LibPeerUnix.Exceptions
 import LibPeerUnix.Models
 
+import traceback
+
 class LibPeerUnixServerBase:
 	def __init__(self):
 		self.applications = set()
@@ -53,15 +55,14 @@ class LibPeerUnixServerBase:
 					pass
 	
 	def _convert_exception(self, e: Exception):
-		error_num = 0
 		if(type(e) in LibPeerUnix.Exceptions.REV_ERROR_MAP):
-			error_num = LibPeerUnix.Exceptions.REV_ERROR_MAP[type(e)]
-		return (str(e), error_num)
+			return (str(e), LibPeerUnix.Exceptions.REV_ERROR_MAP[type(e)])
+		return ('Remote traceback follows:\n\n' + traceback.format_exc(), 0)
 	
 	def _handle_available_discoverers_invocation(self, event):
 		values = []
 		try:
-			result = self.available_discoverers(*values)
+			result = self.available_discoverers(event.application, *values)
 			serialise_result = lambda x: Primitives.type_array.serialise([Primitives.type_string.serialise(x) for x in x])
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -74,7 +75,7 @@ class LibPeerUnixServerBase:
 	def _handle_available_networks_invocation(self, event):
 		values = []
 		try:
-			result = self.available_networks(*values)
+			result = self.available_networks(event.application, *values)
 			serialise_result = lambda x: Primitives.type_array.serialise([x.serialise() for x in x])
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -87,7 +88,7 @@ class LibPeerUnixServerBase:
 	def _handle_available_transports_invocation(self, event):
 		values = []
 		try:
-			result = self.available_transports(*values)
+			result = self.available_transports(event.application, *values)
 			serialise_result = lambda x: Primitives.type_array.serialise([x.serialise() for x in x])
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -103,7 +104,7 @@ class LibPeerUnixServerBase:
 		]
 		
 		try:
-			result = self.bind(*values)
+			result = self.bind(event.application, *values)
 			serialise_result = lambda x: b''
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -119,7 +120,7 @@ class LibPeerUnixServerBase:
 		]
 		
 		try:
-			result = self.set_discoverable(*values)
+			result = self.set_discoverable(event.application, *values)
 			serialise_result = lambda x: b''
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -135,7 +136,7 @@ class LibPeerUnixServerBase:
 		]
 		
 		try:
-			result = self.add_label(*values)
+			result = self.add_label(event.application, *values)
 			serialise_result = lambda x: b''
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -151,7 +152,7 @@ class LibPeerUnixServerBase:
 		]
 		
 		try:
-			result = self.remove_label(*values)
+			result = self.remove_label(event.application, *values)
 			serialise_result = lambda x: b''
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -164,7 +165,7 @@ class LibPeerUnixServerBase:
 	def _handle_clear_labels_invocation(self, event):
 		values = []
 		try:
-			result = self.clear_labels(*values)
+			result = self.clear_labels(event.application, *values)
 			serialise_result = lambda x: b''
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -177,7 +178,7 @@ class LibPeerUnixServerBase:
 	def _handle_get_peers_invocation(self, event):
 		values = []
 		try:
-			result = self.get_peers(*values)
+			result = self.get_peers(event.application, *values)
 			serialise_result = lambda x: Primitives.type_array.serialise([x.serialise() for x in x])
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -193,7 +194,7 @@ class LibPeerUnixServerBase:
 		]
 		
 		try:
-			result = self.get_labelled_peers(*values)
+			result = self.get_labelled_peers(event.application, *values)
 			serialise_result = lambda x: Primitives.type_array.serialise([x.serialise() for x in x])
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -209,7 +210,7 @@ class LibPeerUnixServerBase:
 		]
 		
 		try:
-			result = self.send(*values)
+			result = self.send(event.application, *values)
 			serialise_result = lambda x: b''
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -222,7 +223,7 @@ class LibPeerUnixServerBase:
 	def _handle_close_invocation(self, event):
 		values = []
 		try:
-			result = self.close(*values)
+			result = self.close(event.application, *values)
 			serialise_result = lambda x: b''
 			if(type(result) is Defer):
 				result._attach(event, serialise_result, self._convert_exception)
@@ -254,40 +255,40 @@ class LibPeerUnixServerBase:
 	
 
 	
-	def available_discoverers(self) -> list:
+	def available_discoverers(self, caller: Application) -> list:
 		raise NotImplementedError
 	
-	def available_networks(self) -> list:
+	def available_networks(self, caller: Application) -> list:
 		raise NotImplementedError
 	
-	def available_transports(self) -> list:
+	def available_transports(self, caller: Application) -> list:
 		raise NotImplementedError
 	
-	def bind(self, application: bytes):
+	def bind(self, caller: Application, application: bytes):
 		raise NotImplementedError
 	
-	def set_discoverable(self, discoverable: bool):
+	def set_discoverable(self, caller: Application, discoverable: bool):
 		raise NotImplementedError
 	
-	def add_label(self, label: bytes):
+	def add_label(self, caller: Application, label: bytes):
 		raise NotImplementedError
 	
-	def remove_label(self, label: bytes):
+	def remove_label(self, caller: Application, label: bytes):
 		raise NotImplementedError
 	
-	def clear_labels(self):
+	def clear_labels(self, caller: Application):
 		raise NotImplementedError
 	
-	def get_peers(self) -> list:
+	def get_peers(self, caller: Application) -> list:
 		raise NotImplementedError
 	
-	def get_labelled_peers(self, label: bytes) -> list:
+	def get_labelled_peers(self, caller: Application, label: bytes) -> list:
 		raise NotImplementedError
 	
-	def send(self, message: LibPeerUnix.Models.Message):
+	def send(self, caller: Application, message: LibPeerUnix.Models.Message):
 		raise NotImplementedError
 	
-	def close(self):
+	def close(self, caller: Application):
 		raise NotImplementedError
 	
 	def run(self):

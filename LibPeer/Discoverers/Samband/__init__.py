@@ -63,6 +63,9 @@ class Samband(Discoverer):
 
             except Exception as e:
                 log.warn("Encountered exception on listener thread: %s" % str(e))
+                # TODO remove
+                import traceback
+                print(traceback.format_exc())
 
 
     def advertise(self, address: BinaryAddress) -> int:

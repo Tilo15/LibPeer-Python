@@ -31,7 +31,10 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         # Setup networks (TODO needs system config)
         self.networks = [
             Ipv4({"address": "", "port": 3000}),
-        ] # TODO put up
+        ]
+
+        for network in self.networks:
+            network.go_up()
 
         # Setup muxer (TODO needs system config)
         self.muxer = Muxer(self.networks)
@@ -39,12 +42,21 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         # Setup transports (TODO needs system config)
         self.transports = [
             EDP(self.muxer, {})
-        ] # TODO attach listeners
+        ]
+
+        self.transport_map = {} 
+
+        for transport in self.transports:
+            transport.incoming.subscribe(self.data_received)
+            self.transport_map[transport.identifier] = transport
 
         # Setup discoverers (TODO needs system config)
         self.discoverers = [
             Samband(self.networks)
-        ] # TODO attach listeners
+        ]
+
+        for discoverer in self.discoverers:
+            discoverer.discovered.subscribe(lambda p: self.peer_discovered(p, 1))
 
         # Setup priority map (TODO needs system config)
         self.namespace_priorities = {
@@ -57,9 +69,11 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         self.application_labels = {}
         self.applications_advertised = set()
         self.discoveries = {}
-        self.transport_map = {} # TODO set up
 
         self.tx_queue = queue.PriorityQueue()
+
+        # Runs forever
+        self.transmitter()
 
 
     def ensure_bound(self, application: Application):
@@ -87,6 +101,28 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         app = self.namespace_app[peer.application]
         self.new_peer(model, app)
 
+
+    def data_received(self, info):
+        # Unpack the tuple
+        data: bytes = info[0]
+        channel: bytes = info[1]
+        address: BinaryAddress = info[2]
+
+        # Get the application
+        app = self.namespace_app[address.application]
+
+        # Convert the address
+        label = b""
+        if(address.label):
+            label = address.label
+
+        model_address = LibPeerUnix.Models.Address(address.network_type, address.network_address, address.network_port, label)
+
+        # Create the message
+        model_message = LibPeerUnix.Models.Message(model_address, data, channel)
+
+        # Send to the app
+        self.receive(model_message, app)
         
 
     def advertiser(self, app: Application, discoverer: Discoverer):
@@ -138,7 +174,7 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
     
     
     def available_transports(self, caller: Application) -> list:
-        return [LibPeerUnix.Models.Transport(t.identifier, n.__class__.__name__) for t in self.transports]
+        return [LibPeerUnix.Models.Transport(t.identifier, t.__class__.__name__) for t in self.transports]
     
     
     def bind(self, caller: Application, application: bytes):
@@ -235,18 +271,45 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         # Defer the result until the sending has completed
         defer = Defer()
 
-        # Send the data using the transport
-        transport.send(message.payload, message.channel, address)
+        # Get the namespace priority (out of 10, default 5)
+        priority = 5
+        if(address.application in self.namespace_priorities):
+            priority = self.namespace_priorities[address.application]
 
-        pass
+        # Create the TransmitItem
+        item = TransmitItem(transport, message.payload, message.payload, address, defer, priority)
+
+        # Add the item to the queue
+        self.tx_queue.put(item)
+
+        # Return the defered result
+        return defer
     
     
     def close(self, caller: Application):
-        pass
+        # Make sure the application has bound to a namespace
+        self.ensure_bound(caller)
+
+        # Get the namespace of the caller
+        namespace = self.app_namespace[caller]
+
+        # Notify muxer
+        self.muxer.remove_application(namespace)
+
+        # Stop discovering
+        for discoverer in self.discoverers:
+            discoverer.add_application(namespace)
+
+        # Remove dict entries
+        del self.application_labels[caller]
+        del self.discoveries[namespace]
+        del self.namespace_app[namespace]
+
+        # Remove namespace last
+        del self.app_namespace[caller]
 
 
 
-    # Create a thread for outgoing network traffic
     def transmitter(self):
         # TODO add proper shutdown
         while True:
@@ -259,5 +322,6 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
     
 # If you run this module, it will run your daemon class above
 if __name__ == '__main__':
+    log.settings(True, 0)
     daemon = LibPeerUnixServer()
 

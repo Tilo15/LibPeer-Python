@@ -13,10 +13,10 @@ class UnboundError(Exception):
 from LibMedium.Medium import RemoteCallException
 
 ERROR_MAP = {
-	1: NamespaceOccupiedError
-	2: NetworkError
-	3: DataError
-	4: UnboundError
+	1: NamespaceOccupiedError,
+	2: NetworkError,
+	3: DataError,
+	4: UnboundError,
 }
 
 
@@ -26,10 +26,10 @@ def throw(error: RemoteCallException):
 	raise(error)
 
 REV_ERROR_MAP = {
-	NamespaceOccupiedError: 1
-	NetworkError: 2
-	DataError: 3
-	UnboundError: 4
+	NamespaceOccupiedError: 1,
+	NetworkError: 2,
+	DataError: 3,
+	UnboundError: 4,
 }
 
 

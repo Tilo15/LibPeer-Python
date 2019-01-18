@@ -48,7 +48,7 @@ class Peer:
         self.address = address
         self.administrative_distance = ad
         self.last_seen = time.time()
-        self.labels = set()
+        self.labels = {}
         self.lock = threading.Lock()
 
         if(address.label != None):
@@ -74,7 +74,7 @@ class Peer:
         if(self.address.label):
             label = self.address.label
 
-        address = Address(self.address.protocol, self.address.address, self.address.port, label)
+        address = Address(self.address.network_type, self.address.network_address, self.address.network_port, label)
         return PeerModel(self.administrative_distance, self.last_seen, self.address)
 
     def has_label(self, label: bytes):
