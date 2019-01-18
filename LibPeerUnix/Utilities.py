@@ -52,7 +52,7 @@ class Peer:
         self.lock = threading.Lock()
 
         if(address.label != None):
-            self.labels[address.label] = new PeerLabel(address.label)
+            self.labels[address.label] = PeerLabel(address.label)
 
     def seen(self, label: bytes):
         if(label != None):
@@ -61,7 +61,7 @@ class Peer:
                     self.labels[label].seen()
 
                 else:
-                    self.labels[label] = new PeerLabel(label)
+                    self.labels[label] = PeerLabel(label)
 
         self.last_seen = time.time()
     
@@ -116,12 +116,14 @@ class PeerCollection:
 
 
 class TransmitItem:
-    def __init__(self, transport: Transport, data: bytes, channel: bytes, address: bytes, defer: Defer):
+    def __init__(self, transport: Transport, data: bytes, channel: bytes, address: bytes, defer: Defer, priority: int):
         self.transport = transport
         self.data = data
         self.channel = channel
         self.address = address
         self.defer = defer
+        self.priority = priority
+        self.timestamp = time.time()
 
         if(len(self.channel) != 16):
             raise DataError("Channel must be exactly 16 bytes")
@@ -129,5 +131,14 @@ class TransmitItem:
     def execute(self):
         self.transport.send(self.data, self.channel, self.address).subscribe(
             lambda res: self.defer.complete(res),
-            lambda err: self.defer.error(LibPeerUnix.Exceptions.NetworkError(str(err))
+            lambda err: self.defer.error(LibPeerUnix.Exceptions.NetworkError(str(err)))
         )
+
+    def __lt__(self, other):
+        return self.priority < other.priority or self.timestamp < other.timestamp
+
+    def __eq__(self, other):
+        return self.priority == other.priority and self.timestamp == other.timestamp
+
+    def __gt__(self, other):
+        return self.priority > other.priority or self.timestamp > other.timestamp
