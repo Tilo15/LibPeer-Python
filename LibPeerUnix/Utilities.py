@@ -75,7 +75,7 @@ class Peer:
             label = self.address.label
 
         address = Address(self.address.network_type, self.address.network_address, self.address.network_port, label)
-        return PeerModel(self.administrative_distance, self.last_seen, self.address)
+        return PeerModel(self.administrative_distance, self.last_seen, address)
 
     def has_label(self, label: bytes):
         with self.lock:
