@@ -4,7 +4,7 @@ class ChunkTracker:
     def __init__(self, chunk_ids: list):
         self.chunk_count = len(chunk_ids)
         self.chunks = set(chunk_ids)
-        self.sent = rx.subjects.Subject()
+        self.sent = rx.subjects.ReplaySubject()
         self.complete = False
 
     def chunk_acked(self, chunk_id: bytes):
