@@ -1,6 +1,6 @@
 from LibMedium.Medium.Listener.Application import Application
 from LibMedium.Util.Defer import Defer
-from LibPeerUnix.Exceptions import DataError
+from LibPeerUnix.Exceptions import DataError, NetworkError
 from LibPeerUnix.Models import Peer as PeerModel
 from LibPeerUnix.Models import Address
 from LibPeer.Formats.BinaryAddress import BinaryAddress
@@ -129,9 +129,9 @@ class TransmitItem:
             raise DataError("Channel must be exactly 16 bytes")
 
     def execute(self):
-        self.transport.send(self.data, self.channel, self.address).subscribe(
+        obs = self.transport.send(self.data, self.channel, self.address).subscribe(
             lambda res: self.defer.complete(res),
-            lambda err: self.defer.error(LibPeerUnix.Exceptions.NetworkError(str(err)))
+            lambda err: self.defer.error(NetworkError(str(err)))
         )
 
     def __lt__(self, other):

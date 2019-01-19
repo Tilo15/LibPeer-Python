@@ -19,7 +19,7 @@ class Parcel:
         ident = uuid.UUID(bytes=data[3:19])
         chann = data[19:35]
         trans = data[35:36]
-        app, data = data[36:].rsplit(b"\x02", 1)
+        app, data = data[36:].split(b"\x02", 1)
 
         return Parcel(ident, chann, trans, app, data)
 

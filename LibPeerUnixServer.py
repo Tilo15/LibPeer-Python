@@ -11,6 +11,7 @@ from LibPeer.Networks.Ipv4 import Ipv4
 from LibPeer.Muxer import Muxer
 from LibPeer.Transports import Transport
 from LibPeer.Transports.EDP import EDP
+from LibPeer.Transports.DSTP import DSTP
 from LibPeer.Formats.BinaryAddress import BinaryAddress
 from LibPeer.Logging import log
 
@@ -30,7 +31,7 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         
         # Setup networks (TODO needs system config)
         self.networks = [
-            Ipv4({"address": "", "port": 3000}),
+            Ipv4({"address": "0.0.0.0", "port": 3000}),
         ]
 
         for network in self.networks:
@@ -41,13 +42,14 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
 
         # Setup transports (TODO needs system config)
         self.transports = [
-            EDP(self.muxer, {})
+            EDP(self.muxer, {}),
+            DSTP(self.muxer, {})
         ]
 
         self.transport_map = {} 
 
         for transport in self.transports:
-            transport.incoming.subscribe(lambda info: self.data_received(info, transport.identifier))
+            transport.incoming.subscribe(lambda info, transport=transport: self.data_received(info, transport.identifier))
             self.transport_map[transport.identifier] = transport
 
         # Setup discoverers (TODO needs system config)
