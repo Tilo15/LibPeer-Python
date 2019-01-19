@@ -38,9 +38,6 @@ class Muxer:
 
         except Exception as e:
             log.warn("Error during receive callback: %s" % str(e))
-            # TODO remove
-            import traceback
-            print(traceback.format_exc())
 
 
     def send(self, data: bytes, channel: bytes, transport: bytes, address: BinaryAddress) -> rx.Observable:

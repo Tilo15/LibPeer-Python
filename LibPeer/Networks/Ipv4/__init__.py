@@ -34,7 +34,6 @@ class Ipv4(Network):
                 data, addr = self._socket.recvfrom(65536)
                 address = BinaryAddress(self.identifier, addr[0].encode("utf-8"), str(addr[1]).encode("utf-8"))
                 self.incoming.on_next((data, address))
-                log.debug("Completed receive cycle")
 
             except Exception as e:
                 log.error("Exception on listener thread: " + str(e))
@@ -52,6 +51,5 @@ class Ipv4(Network):
         """Send the specified data to the specified address"""
         def send_it():
             self._socket.sendto(data, (address.network_address, int(address.network_port)))
-            log.info("Sent")
 
         return rx.Observable.from_callable(send_it)

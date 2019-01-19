@@ -210,7 +210,7 @@ class Connection:
                 self.send_chunk(chunk)
 
         except queue.Empty:
-            log.debug("Connection window underrun")    
+            pass 
 
 
     def send_ping(self):
