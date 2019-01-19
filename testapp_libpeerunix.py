@@ -24,12 +24,12 @@ for t in libpeer.available_transports():
 print()
 
 
-peers = []
+discovered_peers = []
 def new_peer(args):
     peer: Peer = args[0]
     # print("--------")
     # print("Found peer %s://%s:%s with AD of %i" % (peer.address.protocol.decode("utf-8"), peer.address.address.decode("utf-8"), peer.address.port.decode("utf-8"), peer.administrative_distance))
-    peers.append(peer)
+    discovered_peers.append(peer)
 
 # Subscribe to new peer discoveries
 libpeer.new_peer.subscribe(new_peer)
@@ -70,7 +70,7 @@ while True:
     
     print()
     peers = libpeer.get_peers()
-    print("Got peers")
+    print("Found %i peers to send to" % len([p for p in peers if p.administrative_distance != 0]))
 
     for peer in peers:
         if(peer.administrative_distance != 0):
