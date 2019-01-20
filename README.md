@@ -22,11 +22,12 @@ There is still a bit of work to be done, but with a well laid out specification,
 - [x] Transports
   - [x] EDP
   - [x] DSTP
-- [ ] Modifiers
+- [x] Modifiers
 - [ ] Interfaces
   - [ ] DSI
-  - [ ] OMI
+  - [x] OMI
   - [ ] SODI
-- [ ] Application Utilities
+- [x] Application Utilities
+- [ ] Daemon/Server Configuration
 
 Note that the "aplication" utilities will be a nice API for applications to use and will not be based on the LibPeer Standard Protocols specification. The specification states that how the application facing API is laid out can be defined by the implementation.

@@ -1,4 +1,4 @@
-from LibPeer.Application import ApplicationBase
+from LibPeer.Application.ApplicationBase import ApplicationBase
 from LibPeerUnix.Models import Peer, Address, Message
 from LibPeerUnix import LibPeerUnixConnection
 from LibPeer.Modifiers import Modifier
@@ -22,20 +22,22 @@ class UnixApplication(ApplicationBase):
         self.system = LibPeerUnixConnection()
 
         # Connect messages to those interested
-        self.system.receive.subscribe(lambda m: self.incoming.on_next(self._receive)
-        self.system.new_peer.subscribe(lambda p: self.new_peer.on_next(DiscoveryInformation(p, self._address_to_baddress(p.address))))
+        self.system.receive.subscribe(self._receive)
+        self.system.new_peer.subscribe(self._new_peer)
 
 
         # Collect information on the system
-        self.networks = [NetworkInformation(n.name, n.protocol, n.actice) for n in self.system.available_networks()]
-        self.transports = [TransportInformation(t.name, t.protocol) for t in self.system.available_transports()
+        self.networks = [NetworkInformation(n.name, n.protocol, n.active) for n in self.system.available_networks()]
+        self.transports = [TransportInformation(t.name, t.protocol) for t in self.system.available_transports()]
         self.discoverers = [DiscovererInformation(d) for d in self.system.available_discoverers()]
 
         # Bind to the namespace
         self.system.bind(namespace)
 
 
-    def _receive(self, message: Message):
+    def _receive(self, args):
+        message: Message = args[0]
+
         # Convert address
         address = self._address_to_baddress(message.address)
 
@@ -49,6 +51,16 @@ class UnixApplication(ApplicationBase):
         # Emit
         self.incoming.on_next(reception)
 
+    def _new_peer(self, args):
+        peer: Peer = args[0]
+
+        # Don't emit for localhost
+        if(peer.administrative_distance == 0):
+            return
+
+        # Emit
+        self.new_peer.on_next(self._peer_to_discovery(peer))
+
 
     def send(self, data: bytes, transport, peer: BinaryAddress, channel: bytes = b"\x00"*16):
         # Get the transport id
@@ -59,7 +71,7 @@ class UnixApplication(ApplicationBase):
             data = mod.egress(data, channel, peer)
 
         # Convert LibPeer binary address to LibPeerUnix Address
-        addr = self._baddress_to_address(address)
+        addr = self._baddress_to_address(peer)
 
         # Create the message object
         message = Message(addr, data, channel, trans)
@@ -89,11 +101,11 @@ class UnixApplication(ApplicationBase):
 
 
     def find_peers(self):
-        return [DiscoveryInformation(p, self._address_to_baddress(p.address)) for p in self.get_peers()]
+        return [self._peer_to_discovery(p) for p in self.system.get_peers() if p.administrative_distance != 0]
 
 
     def find_peers_with_label(self, label: bytes):
-        return [DiscoveryInformation(p, self._address_to_baddress(p.address)) for p in self.get_labeled_peers(label)]
+        return [self._peer_to_discovery(p) for p in self.system.get_labeled_peers(label) if p.administrative_distance != 0]
 
 
     def add_modifier(self, modifier: Modifier):
@@ -107,3 +119,10 @@ class UnixApplication(ApplicationBase):
 
     def _address_to_baddress(self, address: Address) -> BinaryAddress:
         return BinaryAddress(address.protocol, address.address, address.port, self.namespace, address.label)
+
+    def _peer_to_discovery(self, peer: Peer) -> DiscoveryInformation:
+        # Convert address
+        address = self._address_to_baddress(peer.address)
+
+        # Create the peer info object
+        return DiscoveryInformation(address, peer.last_seen, peer.administrative_distance)
