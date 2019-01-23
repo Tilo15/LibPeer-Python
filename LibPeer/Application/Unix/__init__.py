@@ -111,7 +111,7 @@ class UnixApplication(ApplicationBase):
 
 
     def close(self):
-        self.close()
+        self.system.close()
 
 
     def find_peers(self):

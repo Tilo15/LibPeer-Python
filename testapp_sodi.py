@@ -7,6 +7,7 @@ import glob
 import time
 import threading
 import os
+import sys
 
 # Handle solicitations
 def new_solicitation(solicitation: Solicitation):
@@ -142,10 +143,11 @@ while True:
             f = open("download", "wb")
             while reply.transfer_information[4] != 1:
                 f.write(reply.read())
-                print("Downloading %s %i%% complete..." % (path, round(reply.transfer_information[4] * 100)))
+                sys.stdout.write("Downloading %s %i%% complete...\r" % (path, round(reply.transfer_information[4] * 100)))
+
 
             f.close()
-            print("Download complete!")
+            print("\nDownload complete!")
 
         else:
             print("Peer rejected request with status: %s" % obj["status"])

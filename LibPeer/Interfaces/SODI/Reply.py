@@ -82,9 +82,11 @@ class Reply:
             # Add to queue
             self._binary_data.put(bin_data)
 
+            if(self._binary_data_size <= self._binary_data_received):
+                self._is_complete = True
+
             # Return leftovers
             if(len(leftovers) > 0):
-                self._is_complete = True
                 return leftovers
 
 

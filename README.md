@@ -23,10 +23,10 @@ There is still a bit of work to be done, but with a well laid out specification,
   - [x] EDP
   - [x] DSTP
 - [x] Modifiers
-- [ ] Interfaces
-  - [ ] DSI
+- [X] Interfaces
+  - [X] DSI
   - [x] OMI
-  - [ ] SODI
+  - [X] SODI
 - [x] Application Utilities
 - [ ] Daemon/Server Configuration
 
