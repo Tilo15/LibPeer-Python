@@ -12,15 +12,19 @@ dsi = DSI(app)
 
 def pipe(connection: Connection):
     while connection.connected:
-        sys.stdout.buffer.write(connection.read(1024))
+        data = connection.read(1024)
+        # sys.stderr.write("%i bytes from %s\n" % (len(data), connection.peer))
+        sys.stdout.buffer.write(data)
         sys.stdout.buffer.flush()
+
+    sys.stderr.write("%s disconnected\n" % connection.peer)
 
 
 connections = []
 
 def new_connection(connection: Connection):
     sys.stderr.write("New connection from %s\n" % connection.peer)
-    threading.Thread(target=pipe, args=(connection))
+    threading.Thread(target=pipe, args=(connection,)).start()
     connections.append(connection)
 
 

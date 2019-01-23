@@ -9,6 +9,8 @@ from LibPeer.Application.Reception import Reception
 from LibPeer.Application.SystemInformation import TransportInformation, NetworkInformation, DiscovererInformation
 
 import rx
+import threading
+import queue
 
 class UnixApplication(ApplicationBase):
     def __init__(self, namespace: bytes):
@@ -25,11 +27,16 @@ class UnixApplication(ApplicationBase):
         self.system.receive.subscribe(self._receive)
         self.system.new_peer.subscribe(self._new_peer)
 
+        # Create a message queue for all incoming messages
+        self._reception_queue = queue.Queue()
 
         # Collect information on the system
         self.networks = [NetworkInformation(n.name, n.protocol, n.active) for n in self.system.available_networks()]
         self.transports = [TransportInformation(t.name, t.protocol) for t in self.system.available_transports()]
         self.discoverers = [DiscovererInformation(d) for d in self.system.available_discoverers()]
+
+        # Start running the reception emitter
+        threading.Thread(target=self._emitter).start()
 
         # Bind to the namespace
         self.system.bind(namespace)
@@ -48,8 +55,15 @@ class UnixApplication(ApplicationBase):
         # Create the reception object
         reception = Reception(message.payload, message.transport, message.channel, address)
 
-        # Emit
-        self.incoming.on_next(reception)
+        # Add message to queue so as not to block communication with the daemon
+        self._reception_queue.put(reception)
+    
+
+    def _emitter(self):
+        # TODO shutdown correctly
+        while True:
+            reception = self._reception_queue.get()
+            self.incoming.on_next(reception)
 
     def _new_peer(self, args):
         peer: Peer = args[0]

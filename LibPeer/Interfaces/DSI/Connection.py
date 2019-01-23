@@ -48,7 +48,7 @@ class Connection:
 
             elif(message_type == b"S" and self.connected):
                 # Stream data, get expected length
-                self._expected_left = struct.unpack("!Q", data[4:12])
+                self._expected_left = struct.unpack("!Q", data[4:12])[0]
 
                 # Re-process the rest of the data
                 self._receive(data[12:])
@@ -91,15 +91,17 @@ class Connection:
             # If there is more data to be read
             if(len(data) < count):
                 # Get more data and append it to our current data
-                return data + self.read(count - len(data))
+                return data + self.read(count - len(data), timeout)
+
+            return data
 
         # Get the next hunk
         else:
             if(not self.connected and self._fifo.qsize() == 0):
-                raise IOError("Cannot send to remote peer, connection closed")
+                raise IOError("Cannot read from remote peer, connection closed")
 
             self._current_hunk = self._fifo.get(True, timeout)
-            self.read(count)
+            return self.read(count, timeout)
 
 
     def send(self, data: bytes):
