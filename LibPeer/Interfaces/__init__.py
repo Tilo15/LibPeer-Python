@@ -28,7 +28,7 @@ class Interface:
 
 
     def _receive(self, data: bytes, peer: BinaryAddress):
-        raise NotImplemented
+        raise NotImplementedError
 
 
     def _send(self, data: bytes, peer: BinaryAddress):

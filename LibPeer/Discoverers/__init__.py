@@ -10,20 +10,20 @@ class Discoverer:
 
     def advertise(self, address: BinaryAddress) -> int:
         """Returns the recommended time in seconds to wait before re-advertising"""
-        raise NotImplemented
+        raise NotImplementedError
 
     def add_application(self, namespace: bytes):
         """Add an application namespace to discover"""
-        raise NotImplemented
+        raise NotImplementedError
 
     def remove_aplication(self, namespace: bytes):
         """Stop discovering an application namespace"""
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_addresses(self) -> list:
         """Get a list of addresses that peers claim to see us as"""
-        raise NotImplemented
+        raise NotImplementedError
 
     def stop(self):
         """Stop the discoverer"""
-        raise NotImplemented
+        raise NotImplementedError

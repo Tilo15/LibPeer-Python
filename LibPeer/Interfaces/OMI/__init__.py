@@ -6,9 +6,9 @@ from LibPeer.Formats.BinaryAddress import BinaryAddress
 import rx
 
 class OMI(Interface):
-    def __init__(self, application: ApplicationBase, channel: bytes = b"\x00"*16):
+    def __init__(self, application: ApplicationBase, channel: bytes = b"\x00"*16, transport: str = "DSTP"):
         # Initialise the interface
-        super().__init__(application, channel, "DSTP")
+        super().__init__(application, channel, transport)
 
         # Set up subject for new Object Messages
         self.new_message = rx.subjects.Subject()

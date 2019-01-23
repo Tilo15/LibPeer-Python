@@ -13,7 +13,7 @@ def _determine_ideal_class():
 
     # If all else fails, spin up a userland instance of the stack.
     # TODO do what the above comment states
-    raise NotImplemented
+    raise NotImplementedError
 
 
 def Application(namespace) -> ApplicationBase:

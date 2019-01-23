@@ -22,39 +22,39 @@ class ApplicationBase:
 
 
     def send(self, data: bytes, transport, peer: BinaryAddress, channel: bytes = b"\x00"*16):
-        raise NotImplemented
+        raise NotImplementedError
 
     
     def add_label(self, label: bytes):
-        raise NotImplemented
+        raise NotImplementedError
 
 
     def remove_label(self, label: bytes):
-        raise NotImplemented
+        raise NotImplementedError
 
     
     def clear_labels(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
     def set_discoverable(self, discoverable: bool):
-        raise NotImplemented
+        raise NotImplementedError
 
 
     def close(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
     def find_peers(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
     def find_peers_with_label(self, label: bytes):
-        raise NotImplemented
+        raise NotImplementedError
 
     
     def add_modifier(self, modifier: Modifier):
-        raise NotImplemented
+        raise NotImplementedError
 
 
     def _get_transport_identifier(self, transport) -> bytes:

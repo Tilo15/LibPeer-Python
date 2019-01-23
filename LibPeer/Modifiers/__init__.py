@@ -5,7 +5,7 @@ class Modifier:
         pass
 
     def ingress(self, data: bytes, channel: bytes, address: BinaryAddress) -> bytes:
-        raise NotImplemented
+        raise NotImplementedError
 
     def egress(self, data: bytes, channel: bytes, address: BinaryAddress) -> bytes:
-        raise NotImplemented
+        raise NotImplementedError
