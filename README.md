@@ -16,8 +16,9 @@ There is still a bit of work to be done, but with a well laid out specification,
 - [ ] Discoverers
   - [x] Samband
   - [ ] AMPP
-- [x] Networks
+- [ ] Networks
   - [x] IPv4
+  - [ ] NARP
 - [x] Muxer
 - [x] Transports
   - [x] EDP

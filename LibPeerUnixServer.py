@@ -58,6 +58,13 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         ]
 
         for discoverer in self.discoverers:
+            # Create an administrative distance multiplier
+            distance_mul = 2
+
+            # 2 For every other discoverer, 1 for Samband (local)
+            if(type(discoverer) == Samband):
+                distance_mul = 1
+
             discoverer.discovered.subscribe(lambda p: self.peer_discovered(p, 1))
 
         # Setup priority map (TODO needs system config)
@@ -83,9 +90,12 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
             raise LibPeerUnix.Exceptions.UnboundError("That method cannot be called before bind(nameapce) is called.")
 
     
-    def peer_discovered(self, peer: BinaryAddress, distance_mul: int):
+    def peer_discovered(self, info, distance_mul: int):
+        # Get address
+        peer: BinaryAddress = info[0]
+
         # Determine administrative distance
-        distance = 1
+        distance = info[1] * distance_mul
 
         # Change AD to 0 if this is the local machine
         for discoverer in self.discoverers:

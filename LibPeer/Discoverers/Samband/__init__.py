@@ -59,7 +59,7 @@ class Samband(Discoverer):
                     continue
 
                 if(packet.address.application in self.applications):
-                    self.discovered.on_next(packet.address)
+                    self.discovered.on_next((packet.address, 1))
 
             except Exception as e:
                 log.warn("Encountered exception on listener thread: %s" % str(e))

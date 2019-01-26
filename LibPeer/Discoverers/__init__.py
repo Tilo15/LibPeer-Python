@@ -6,7 +6,12 @@ class Discoverer:
     def __init__(self, networks: list):
         """Initialise the discoverer"""
         self.discovered = rx.subjects.Subject()
-        self.networks = networks
+        self.networks = {}
+
+        # Create dict
+        for network in networks:
+            self.networks[network.identifier] = network
+            
 
     def advertise(self, address: BinaryAddress) -> int:
         """Returns the recommended time in seconds to wait before re-advertising"""
