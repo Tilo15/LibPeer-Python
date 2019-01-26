@@ -4,11 +4,15 @@ from LibPeer.Formats.BinaryAddress import BinaryAddress
 from LibPeer.Formats.AMPP.Advertorial import Advertorial
 from LibPeer.Formats.AMPP.Subscription import Subscription
 from LibPeer.Discoverers.AMPP.SubscriptionItemPeers import SubscriptionItemPeers
+from LibPeer.Discoverers.AMPP.Bootstrappers.Ipv4Multicast import Ipv4Multicast
+from LibPeer.Discoverers.AMPP.Bootstrappers.DNS import DNS
+
 
 import rx
 import uuid
 
 CACHE_LIMIT = 10000
+BOOTSTRAPPERS = [Ipv4Multicast, DNS]
 
 class AMPP(Discoverer):
     def __init__(self, networks: list):
@@ -27,8 +31,13 @@ class AMPP(Discoverer):
         self._resubscribe = True
         self._subscription_ids = set()
 
-        for network in self.networks.items():
+        for network in self.networks.values():
             network.incoming.subscribe(self._network_incoming)
+
+        # Setup bootstrappers
+        self._bootstrappers = [bootstrapper(networks) for bootstrapper in BOOTSTRAPPERS]
+        for bootstrapper in self._bootstrappers:
+            bootstrapper.discovered.subscribe(self._new_ampp_peer)
 
 
     def _network_incoming(self, info):
@@ -40,8 +49,8 @@ class AMPP(Discoverer):
                 # Ignore if we are hearing ourselves
                 return
 
-            # If we are talking to someone new, add them
-            self._peers.add(address)
+            # If we are talking to someone new, add them (check done inside function)
+            self._new_ampp_peer(address)
                 
             # It's an AMPP packet!
             msg_type = data[20:23]
@@ -70,8 +79,8 @@ class AMPP(Discoverer):
 
                     # Is it an AMPP advertorial?
                     if(advertorial.address.application == b"AMPP"):
+                        self._new_ampp_peer(peer)
                         
-
                     # Add to cache
                     if(advertorial.ttl > 0):
                         self._add_to_cache(advertorial)
@@ -138,16 +147,16 @@ class AMPP(Discoverer):
 
     def _new_ampp_peer(self, peer: BinaryAddress):
         # Do we already have this peer?
-        if(advertorial.address in self._peers):
+        if(peer not in self._peers):
             # Add the peer
-            self._peers.add(advertorial.address)
+            self._peers.add(peer)
 
             # Send it our subscriptions
-            self._send_subscriptions([address,])
+            self._send_subscriptions([peer,])
 
             # Send it an address query
             self._peers_address_queried.add(peer)
-            self._send(b"ADQ")
+            self._send(b"ADQ", peer)
 
 
     def _clean_cahce(self):
@@ -206,8 +215,15 @@ class AMPP(Discoverer):
             for peer in self._subscription_item_peers[address.application].peers:
                 self._send(b"ADV" + advertorial.serialise(), peer)
 
+        # TODO the manager probably calls this a few times, (if there's labels etc) so the below
+        # should only be done once per time period.
+
         # While we're at it, update our subscriptions too
         self._send_subscriptions(self._peers)
+
+        # Assuming this isn't advertising "AMPP", take this opportunity to advertise AMPP
+        if(address.application != b"AMPP"):
+            self.advertise(BinaryAddress(address.network_type, address.network_address, address.network_port, b"AMPP"))
 
         # Did we send to any peers?
         if(send_count > 0):
@@ -224,7 +240,7 @@ class AMPP(Discoverer):
         self.applications.add(namespace)
         self._resubscribe = True
         self._send_subscriptions(self._peers)
-        
+
 
     def remove_aplication(self, namespace: bytes):
         """Stop discovering an application namespace"""
@@ -238,4 +254,5 @@ class AMPP(Discoverer):
 
     def stop(self):
         """Stop the discoverer"""
-        raise NotImplementedError
+        for bootstrapper in self._bootstrappers:
+            bootstrapper.stop()

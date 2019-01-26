@@ -6,6 +6,7 @@ import LibPeerUnix.Models
 from LibPeerUnix.Utilities import LabelCollection, PeerCollection, TransmitItem
 from LibPeer.Discoverers import Discoverer
 from LibPeer.Discoverers.Samband import Samband
+from LibPeer.Discoverers.AMPP import AMPP
 from LibPeer.Networks import Network
 from LibPeer.Networks.Ipv4 import Ipv4
 from LibPeer.Muxer import Muxer
@@ -54,7 +55,8 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
 
         # Setup discoverers (TODO needs system config)
         self.discoverers = [
-            Samband(self.networks)
+            Samband(self.networks),
+            AMPP(self.networks)
         ]
 
         for discoverer in self.discoverers:
