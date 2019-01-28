@@ -5,6 +5,7 @@ from LibPeer.Logging import log
 import socket
 import threading
 import rx
+import traceback
 
 class Ipv4(Network):
     identifier = b"IPv4"
@@ -37,6 +38,9 @@ class Ipv4(Network):
 
             except Exception as e:
                 log.error("Exception on listener thread: " + str(e))
+                tb = traceback.format_exc()
+                for line in tb.split("\n"):
+                    log.error(line)
         
         log.info("Listening stopped.")
 

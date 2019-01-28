@@ -15,7 +15,7 @@ class Ipv4Multicast(Bootstrapper):
         self.samband = Samband(networks)
 
         # Forward messages from the Samband instance
-        self.samband.discovered.on_next(lambda x: self.discovered.on_next(x))
+        self.samband.discovered.subscribe(lambda x: self.discovered.on_next(x[0]))
 
         # Add AMPP to the list to listen for
         self.samband.add_application(b"AMPP")

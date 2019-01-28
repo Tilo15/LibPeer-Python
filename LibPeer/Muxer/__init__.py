@@ -33,11 +33,15 @@ class Muxer:
             # Update the address to include more information
             address.application = parcel.application_protocol
 
-            # Pass along the parcel and address
-            self.incoming.on_next((parcel, address))
+            try:
+                # Pass along the parcel and address
+                self.incoming.on_next((parcel, address))
 
-        except Exception as e:
-            log.warn("Error during receive callback: %s" % str(e))
+            except Exception as e:
+                log.warn("Error during receive callback: %s" % str(e))
+
+        except:
+            pass
 
 
     def send(self, data: bytes, channel: bytes, transport: bytes, address: BinaryAddress) -> rx.Observable:

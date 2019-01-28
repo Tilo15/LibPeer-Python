@@ -5,7 +5,7 @@ import msgpack
 import time
 
 class Advertorial:
-    def __init__(self, address: BinaryAddress, ttl: int, expires_in: int, aid: uuid.UUID):
+    def __init__(self, address: BinaryAddress, ttl: int, expires_in: int, aid: uuid.UUID = uuid.uuid4()):
         self._received = time.time()
         self.address = address
         self.ttl = ttl - 1

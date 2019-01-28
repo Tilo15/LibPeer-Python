@@ -6,6 +6,7 @@ from LibPeer.Formats.AMPP.Subscription import Subscription
 from LibPeer.Discoverers.AMPP.SubscriptionItemPeers import SubscriptionItemPeers
 from LibPeer.Discoverers.AMPP.Bootstrappers.Ipv4Multicast import Ipv4Multicast
 from LibPeer.Discoverers.AMPP.Bootstrappers.DNS import DNS
+from LibPeer.Logging import log
 
 
 import rx
@@ -26,7 +27,9 @@ class AMPP(Discoverer):
         self._instance_id = uuid.uuid4().bytes
 
         self._peers = set()
-        self._subscription_item_peers = {}
+        self._subscription_item_peers = {
+            b"AMPP": SubscriptionItemPeers(b"AMPP")
+        }
         self._cahce = set()
         self._resubscribe = True
         self._subscription_ids = set()
@@ -43,8 +46,9 @@ class AMPP(Discoverer):
     def _network_incoming(self, info):
         data: bytes = info[0]
         address: BinaryAddress = info[1]
+        address.application = b"AMPP"
 
-        if(data[:4] == "AMPP"):
+        if(data[:4] == b"AMPP"):
             if(self._instance_id == data[4:20]):
                 # Ignore if we are hearing ourselves
                 return
@@ -59,6 +63,7 @@ class AMPP(Discoverer):
             if(msg_type == b"ADV"):
                 # Advertorial
                 advertorial = Advertorial.deserialise(message)
+                peer = advertorial.address
 
                 # Have we received this before?
                 if(advertorial not in self._cahce):
@@ -75,7 +80,8 @@ class AMPP(Discoverer):
                     # Are we interested in it?
                     if(advertorial.address.application in self.applications):
                         # Let the application know
-                        self.discovered.on_next(advertorial.address)
+                        # TODO Calculate a useful AD
+                        self.discovered.on_next((advertorial.address, 10))
 
                     # Is it an AMPP advertorial?
                     if(advertorial.address.application == b"AMPP"):
@@ -148,15 +154,24 @@ class AMPP(Discoverer):
     def _new_ampp_peer(self, peer: BinaryAddress):
         # Do we already have this peer?
         if(peer not in self._peers):
+            log.debug("Found peer %s" % peer)
             # Add the peer
             self._peers.add(peer)
 
+            # Autosubscribe it to AMPP
+            self._subscription_item_peers[b"AMPP"].peers.add(peer)
+
             # Send it our subscriptions
+            self._resubscribe = True
             self._send_subscriptions([peer,])
 
             # Send it an address query
             self._peers_address_queried.add(peer)
             self._send(b"ADQ", peer)
+
+            # Advertise our known other AMPP peers to it
+            for other_peer in self._peers:
+                self._send(b"ADV" + Advertorial(other_peer, 1, 280).serialise(), peer)
 
 
     def _clean_cahce(self):
@@ -190,8 +205,11 @@ class AMPP(Discoverer):
         # Add AMPP subscription
         apps.append(b"AMPP")
 
+        # Add applications that the user wants
+        apps += [app for app in self.applications]
+
         # Create subscription
-        sub  = Subscription(apps, self._resubscribe)
+        sub  = Subscription(apps, not self._resubscribe)
 
         # Set resubscription status
         self._resubscribe = False
