@@ -2,9 +2,12 @@ import uuid
 import msgpack
 
 class Subscription:
-    def __init__(self, apps: list, renewing: bool, sid: uuid.UUID = uuid.uuid4()):
+    def __init__(self, apps: list, renewing: bool, sid: uuid.UUID = None):
         self.subscriptions = apps
         self.id = sid
+        if(self.id == None):
+            self.id = uuid.uuid4()
+
         self.renewing = renewing
 
 

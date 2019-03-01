@@ -96,10 +96,11 @@ class AMPP(Discoverer):
                 # Subscription
                 subscription = Subscription.deserialise(message)
 
-                print(subscription.subscriptions)
+                print(subscription.id.bytes, subscription.id.bytes not in self._subscription_ids)
 
                 # Have we received this before?
                 if(subscription.id.bytes not in self._subscription_ids):
+                    print(subscription.subscriptions)
                     # Add to received subscriptions
                     self._subscription_ids.add(subscription.id.bytes)
 

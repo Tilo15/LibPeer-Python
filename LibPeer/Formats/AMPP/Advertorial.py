@@ -5,12 +5,14 @@ import msgpack
 import time
 
 class Advertorial:
-    def __init__(self, address: BinaryAddress, ttl: int, expires_in: int, aid: uuid.UUID = uuid.uuid4()):
+    def __init__(self, address: BinaryAddress, ttl: int, expires_in: int, aid: uuid.UUID = None):
         self._received = time.time()
         self.address = address
         self.ttl = ttl - 1
         self.expires_in = expires_in
         self.id = aid
+        if(self.id == None):
+            self.id = uuid.uuid4()
 
 
     def serialise(self):

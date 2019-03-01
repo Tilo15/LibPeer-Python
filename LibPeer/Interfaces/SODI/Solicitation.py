@@ -3,9 +3,12 @@ import msgpack
 import struct
 
 class Solicitation:
-    def __init__(self, sodi, peer, query: str, token: uuid.UUID = uuid.uuid4()):
+    def __init__(self, sodi, peer, query: str, token: uuid.UUID = None):
         self.query = query
         self.token = token
+        if(self.token == None):
+            self.token = uuid.uuid4()
+
         self._sodi = sodi
         self.peer = peer
         self.tx_fraction = 0.0
