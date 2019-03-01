@@ -124,7 +124,7 @@ class AMPP(Discoverer):
                             self._send(b"ADV" + adv.serialise(), address)
 
                         # Send to all AMPP peers
-                        for peer in self._peers:
+                        for peer in self._peers.copy():
                             if peer != address:
                                 self._send(b"SUB" + subscription.serialise(), peer)
 
@@ -201,7 +201,7 @@ class AMPP(Discoverer):
         self._clean_cahce()
 
         # Return all valid items
-        return [adv for adv in self._cahce if adv.address.application not in apps]
+        return [adv for adv in self._cahce if adv.address.application in apps]
 
 
     def _send_subscriptions(self, peers):
@@ -231,7 +231,10 @@ class AMPP(Discoverer):
         # Create the advertorial
         advertorial = Advertorial(address, 30, 180)
 
-        # Keep track of the number of peers that the 
+        # Cache the advertorial to immediately send to new peers
+        self._add_to_cache(advertorial)
+
+        # Keep track of the number of peers that the advertorial was sent to
         send_count = 0
 
         # Could there possibly be any peers interested?
