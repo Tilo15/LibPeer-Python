@@ -13,9 +13,9 @@ This implementation has the following dependancies:
 
 There is still a bit of work to be done, but with a well laid out specification, it shouldn't take long to get through the list
 
-- [ ] Discoverers
+- [x] Discoverers
   - [x] Samband
-  - [ ] AMPP
+  - [x] AMPP
 - [ ] Networks
   - [x] IPv4
   - [ ] NARP
