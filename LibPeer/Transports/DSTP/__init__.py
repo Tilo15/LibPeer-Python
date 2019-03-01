@@ -26,16 +26,16 @@ class DSTP(Transport):
 
 
     def _get_connection(self, channel: bytes, address: BinaryAddress) -> Connection:
-        if((channel, address) in self.connections):
+        if((address.application, channel, address) in self.connections):
             # Get the existing connection
-            return self.connections[(channel, address)]
+            return self.connections[(address.application, channel, address)]
 
         else:
             # Create new connection
             connection = Connection(self.muxer, channel, address)
 
             # Add the connection to the dict
-            self.connections[(channel, address)] = connection
+            self.connections[(address.application, channel, address)] = connection
 
             # Subscribe to new data on the connection
             connection.data_ready.subscribe(self._data_ready)

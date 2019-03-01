@@ -46,9 +46,11 @@ class AMPP(Discoverer):
     def _network_incoming(self, info):
         data: bytes = info[0]
         address: BinaryAddress = info[1]
-        address.application = b"AMPP"
 
         if(data[:4] == b"AMPP"):
+            # This is an AMPP peer
+            address.application = b"AMPP"
+
             if(self._instance_id == data[4:20]):
                 # Ignore if we are hearing ourselves
                 return
@@ -96,11 +98,8 @@ class AMPP(Discoverer):
                 # Subscription
                 subscription = Subscription.deserialise(message)
 
-                print(subscription.id.bytes, subscription.id.bytes not in self._subscription_ids)
-
                 # Have we received this before?
                 if(subscription.id.bytes not in self._subscription_ids):
-                    print(subscription.subscriptions)
                     # Add to received subscriptions
                     self._subscription_ids.add(subscription.id.bytes)
 
@@ -124,9 +123,10 @@ class AMPP(Discoverer):
                         for adv in advertorials:
                             self._send(b"ADV" + adv.serialise(), address)
 
-                        # Get any we may have missed upstream
-                        self._resubscribe = True
-                        self._send_subscriptions(self._peers.difference(set([address,])))
+                        # Send to all AMPP peers
+                        for peer in self._peers:
+                            if peer != address:
+                                self._send(b"SUB" + subscription.serialise(), peer)
 
 
             elif(msg_type == b"ADQ"):
@@ -206,13 +206,14 @@ class AMPP(Discoverer):
 
     def _send_subscriptions(self, peers):
         # Get all relevent app namespaces
-        apps = [app for app, sips in self._subscription_item_peers.items() if sips.has_peers]
+        #apps = [app for app, sips in self._subscription_item_peers.items() if sips.has_peers]
+        # ^^^ What was I thinking?
+        
+        # Add applications that the user wants
+        apps = [app for app in self.applications]
 
         # Add AMPP subscription
         apps.append(b"AMPP")
-
-        # Add applications that the user wants
-        apps += [app for app in self.applications]
 
         # Create subscription
         sub  = Subscription(apps, not self._resubscribe)
@@ -238,6 +239,8 @@ class AMPP(Discoverer):
             # Send to all peers interested (if any still exist)
             for peer in self._subscription_item_peers[address.application].peers:
                 self._send(b"ADV" + advertorial.serialise(), peer)
+                if(advertorial.address.application != b"AMPP"):
+                    send_count += 1
 
         # TODO the manager probably calls this a few times, (if there's labels etc) so the below
         # should only be done once per time period.

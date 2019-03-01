@@ -10,11 +10,7 @@ class SubscriptionItemPeers:
     def update(self, address: BinaryAddress, subscription: Subscription):
         if(self.id in subscription.subscriptions):
             self.peers.add(address)
-            log.debug("Peer %s just subscribed to application '%s'" % (address, self.id))
-
-        elif(address in self.peers):
-            log.debug("Peer %s just unsubscribed from application '%s'" % (address, self.id))
-            self.peers.remove(address)
+            # log.debug("Peer %s just subscribed to application '%s'" % (address, self.id))
         
     @property
     def has_peers(self):

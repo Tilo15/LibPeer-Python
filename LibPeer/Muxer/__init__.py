@@ -4,6 +4,7 @@ from LibPeer.Logging import log
 
 import uuid
 import rx
+import traceback
 
 class Muxer:
 
@@ -38,7 +39,10 @@ class Muxer:
                 self.incoming.on_next((parcel, address))
 
             except Exception as e:
-                log.warn("Error during receive callback: %s" % str(e))
+                log.error("Error during receive callback: %s" % str(e))
+                tb = traceback.format_exc()
+                for line in tb.split("\n"):
+                    log.error(line)
 
         except:
             pass

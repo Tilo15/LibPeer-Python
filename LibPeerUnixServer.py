@@ -122,6 +122,10 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
         channel: bytes = info[1]
         address: BinaryAddress = info[2]
 
+        # Ignore if we aren't running the application
+        if(address.application not in self.namespace_app):
+            return
+
         # Get the application
         app = self.namespace_app[address.application]
 
