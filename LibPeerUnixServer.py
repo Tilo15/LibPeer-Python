@@ -55,8 +55,8 @@ class LibPeerUnixServer(LibPeerUnixServerBase):
 
         # Setup discoverers (TODO needs system config)
         self.discoverers = [
-            Samband(self.networks),
-            AMPP(self.networks)
+            # Samband(self.networks),
+            AMPP(self.networks),
         ]
 
         for discoverer in self.discoverers:

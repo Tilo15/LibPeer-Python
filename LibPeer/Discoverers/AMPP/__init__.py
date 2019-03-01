@@ -96,6 +96,8 @@ class AMPP(Discoverer):
                 # Subscription
                 subscription = Subscription.deserialise(message)
 
+                print(subscription.subscriptions)
+
                 # Have we received this before?
                 if(subscription.id.bytes not in self._subscription_ids):
                     # Add to received subscriptions
@@ -119,7 +121,7 @@ class AMPP(Discoverer):
                         # Send relevent cached items
                         advertorials = self._get_in_cache(subscription.subscriptions)
                         for adv in advertorials:
-                            self._send(b"ADV" + adv.serialise())
+                            self._send(b"ADV" + adv.serialise(), address)
 
                         # Get any we may have missed upstream
                         self._resubscribe = True
@@ -139,6 +141,9 @@ class AMPP(Discoverer):
                 if(address in self._peers_address_queried):
                     # If we asked this peer for it's opinion, deserialise the response
                     reported_address = BinaryAddress.deserialise(message)
+
+                    # Log out the response
+                    log.info("%s sees us as %s" % (address, reported_address))
 
                     # Save the response
                     self._reported_addresses.add(reported_address)
@@ -169,7 +174,7 @@ class AMPP(Discoverer):
             self._peers_address_queried.add(peer)
             self._send(b"ADQ", peer)
 
-            # Advertise our known other AMPP peers to it
+            # Advertise our known other AMPP peers to it TODO maybe don't do this
             for other_peer in self._peers:
                 self._send(b"ADV" + Advertorial(other_peer, 1, 280).serialise(), peer)
 

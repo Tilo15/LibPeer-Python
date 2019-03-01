@@ -97,6 +97,7 @@ class log:
 				
 
 			log.output.write("%s%s\n" % (logHeader, messageLines))
+			log.output.flush()
 
 	@staticmethod
 	def get_identifier(iterations=1):
