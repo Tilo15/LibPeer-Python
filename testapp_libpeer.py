@@ -21,13 +21,13 @@ def recv(info):
 peers = set()
 
 def new_peer(address):
-    print("Found peer %s" % str(address))
-    peers.add(address)
+    print("Found peer %s" % str(address[0]))
+    peers.add(address[0])
 
 
 app = b"helloworld"
 
-net = Ipv4({"address": "192.168.1.224", "port": 3001})
+net = Ipv4({"address": "192.168.178.34", "port": 3001})
 net.go_up()
 
 muxer = Muxer([net])
@@ -46,7 +46,7 @@ while True:
 
     for peer in peers:    
         print("************" * 4)
-        trans.send(mesg, struct.pack("!QQ", 0, 0), app, peer).subscribe(lambda x: print("Sent to %s" % peer))
+        trans.send(mesg, struct.pack("!QQ", 0, 0), peer).subscribe(lambda x: print("Sent to %s" % peer))
 
     for address in disc.get_addresses():
         address.application = app
