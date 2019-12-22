@@ -1,0 +1,16 @@
+
+class PacketTypes:
+    HOST_CONTROL_EGRESS = 0x00
+    RELAY_CONTROL_EGRESS = 0x01
+    CLIENT_CONTROL_EGRESS = 0x02
+    CLIENT_ORIGINATED_CONTROLL = 0x03
+    HOST_DATA_EGRESS = 0x04
+    HOST_ORIGINATED_DATA = 0x05
+    CLIENT_DATA_EGRESS = 0x06
+    CLIENT_ORIGINATED_DATA = 0x07
+
+
+
+class Frame:
+
+    def __init__(self, packet_type, )
