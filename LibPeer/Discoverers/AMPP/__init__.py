@@ -74,7 +74,7 @@ class AMPP(Discoverer):
                         # Can we forward it?
                         if(advertorial.ttl > 0):
                             # Forward to those peers
-                            for peer in self._subscription_item_peers[advertorial.address.application].peers:
+                            for peer in self._subscription_item_peers[advertorial.address.application].peers.copy():
                                 # Make sure we don't send it back to the sending peer
                                 if(peer != address):
                                     self._send(b"ADV" + advertorial.serialise(), peer)
